@@ -58,7 +58,8 @@ namespace Baseless
         template <typename T>
         inline void Destruct (const T & place)
         {
-            place.~T();
+            if (!std::is_trivially_destructible<T>::value)
+                place.~T();
         }
 
         template <typename T>

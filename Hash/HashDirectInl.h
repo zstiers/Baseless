@@ -16,6 +16,7 @@
 ****/
 
 // This file is included by Hash.h
+#include "../Utility/TypeList.h"
 
 namespace Baseless
 {
@@ -92,14 +93,14 @@ namespace Baseless
             template <typename H>
             static inline HashCode HashDirect (const T & val)
             {
-                static_assert(!std::is_same<CorrectController, TypeList::MatchNotFound>::value, "No valid hash function exists for type. Check output for type information.");
+                static_assert(!std::is_same<CorrectController, Utility::TypeList::MatchNotFound>::value, "No valid hash function exists for type. Check output for type information.");
                 return CorrectController::HashDirect<H>(val);
             }
         
             template <typename H, typename U>
             static inline HashCode HashDirect (const T & val, const U & seed)
             {
-                static_assert(!std::is_same<CorrectController, TypeList::MatchNotFound>::value, "No valid hash function exists for type. Check output for type information.");
+                static_assert(!std::is_same<CorrectController, Utility::TypeList::MatchNotFound>::value, "No valid hash function exists for type. Check output for type information.");
                 return CorrectController::HashDirect<H, U>(val, seed);
             }
         };

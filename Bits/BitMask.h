@@ -32,32 +32,32 @@ namespace Baseless
             Type m_val;
 
         private: // Helpers
-            static Type BitToMask (size_t bit) { return static_cast<Type>(1) << bit; }
+            static inline Type BitToMask (size_t bit) { return static_cast<Type>(1) << bit; }
 
         public: // Construction
             TBitMask () : m_val(0)           { }
             TBitMask (Type val) : m_val(val) { }
 
         public: // Basic mutators
-            void ClearBit (size_t bit)  { ClearMask(BitToMask(bit));  }
-            void ClearMask (Type mask)  { m_val &= ~mask;             }
-            void SetBit (size_t bit)    { SetMask(BitToMask(bit));    }
-            void SetMask (Type mask)    { m_val |= mask;              }
-            void ToggleBit (size_t bit) { ToggleMask(BitToMask(bit)); }
-            void ToggleMask (Type mask) { m_val ^= mask;              }
+            inline void ClearBit (size_t bit)  { ClearMask(BitToMask(bit));  }
+            inline void ClearMask (Type mask)  { m_val &= ~mask;             }
+            inline void SetBit (size_t bit)    { SetMask(BitToMask(bit));    }
+            inline void SetMask (Type mask)    { m_val |= mask;              }
+            inline void ToggleBit (size_t bit) { ToggleMask(BitToMask(bit)); }
+            inline void ToggleMask (Type mask) { m_val ^= mask;              }
 
         public: // Advanced mutators
-            void SetBitTo (size_t bit, bool val) { SetMaskTo(BitToMask(bit));             }
-            void SetMaskTo (Type mask, bool val) { val ? SetMask(mask) : ClearMask(mask); }
+            inline void SetBitTo (size_t bit, bool val) { SetMaskTo(BitToMask(bit));             }
+            inline void SetMaskTo (Type mask, bool val) { val ? SetMask(mask) : ClearMask(mask); }
 
         public: // Some nice accessors
-            bool CheckBit (size_t bit)    { return CheckMaskAny(BitToMask(bit)); }
-            bool CheckMaskAll (Type mask) { return (m_val & mask) == mask;       }
-            bool CheckMaskAny (Type mask) { return (m_val & mask) != 0;          }
+            inline bool CheckBit (size_t bit)    { return CheckMaskAny(BitToMask(bit)); }
+            inline bool CheckMaskAll (Type mask) { return (m_val & mask) == mask;       }
+            inline bool CheckMaskAny (Type mask) { return (m_val & mask) != 0;          }
             
         public: // Operators (add non-const versions)
-	        bool operator [] (size_t bit) const { return CheckBit(bit); }
-            operator Type () const              { return m_val;         }
+	        inline bool operator [] (size_t bit) const { return CheckBit(bit); }
+            inline operator Type () const              { return m_val;         }
             
         public: // Iterators
             class CIteratorConst
