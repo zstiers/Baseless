@@ -287,13 +287,10 @@ namespace Baseless
         {
             // If the slot already exists
             const auto existingIndex = FindIndex(key, hash, HashToIndex(hash));
-            if (existingIndex != INVALID_INDEX)
-            {
+            if (existingIndex == INVALID_INDEX)
+                SetInternalNew<KeyFrom, UserDataFrom>(key, hash, userData);
+            else
                 OnSetExisting(existingIndex, userData);
-                return;
-            }
-
-            SetInternalNew<KeyFrom, UserDataFrom>(key, hash, userData);
         }
 
         template <typename Key, typename Hasher, typename Notifier>
