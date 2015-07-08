@@ -17,6 +17,9 @@
 
 #include "..\Debug\Assert.h"
 #include <cstdint>
+#include <climits>
+
+#define TRY_USE_INTRINSICS 1
 
 namespace Baseless
 {
@@ -42,11 +45,40 @@ namespace Baseless
 	        return (unsigned char)(((_byte * 0x0802LU & 0x22110LU) | (_byte * 0x8020LU & 0x88440LU)) * 0x10101LU >> 16);
         }
 
-        inline int CountBits (unsigned long v)
+        template <typename T>
+        inline int PopulationCount (T v)
         {
-	        v = v - ((v >> 1) & 0x55555555);								// reuse input as temporary
-	        v = (v & 0x33333333) + ((v >> 2) & 0x33333333);					// temp
-	        return (int)(((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24);	// count
+#if TRY_USE_INTRINSICS
+	        return sizeof(T) > sizeof(uint32_t) ? PopulationCountIntrinsic((uint64_t)v) : PopulationCountIntrinsic((uint32_t)v);
+#else
+            // The implementation of this function came from http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
+            v = v - ((v >> 1) & (T)~(T)0/3);                                // temp
+            v = (v & (T)~(T)0/15*3) + ((v >> 2) & (T)~(T)0/15*3);           // temp
+            v = (v + (v >> 4)) & (T)~(T)0/255*15;                           // temp
+            return (T)(v * ((T)~(T)0/255)) >> (sizeof(T) - 1) * CHAR_BIT; // count
+#endif
+        }
+
+        inline int PopulationCountIntrinsic (uint32_t v)
+        {
+#if defined(_MSC_VER)
+            return __popcnt((unsigned)v);
+#elif defined(__GCC__)
+            return __builtin_popcount(v);
+#endif
+        }
+
+        inline int PopulationCountIntrinsic (uint64_t v)
+        {
+#if defined(_MSC_VER)
+#   if defined(_WIN64)
+            return (int)__popcnt64(v);
+#   else
+            return __popcnt((uint32_t)v) + __popcnt((uint32_t)(v >> 32));;
+#   endif
+#elif defined(__GCC__)
+            return __builtin_popcountll(v);
+#endif
         }
 
         // 32 bit version
@@ -60,12 +92,15 @@ namespace Baseless
         inline int FindLowestSetBit (uint32_t val)
         {
             ASSERT_EXPR(val);
-#if defined(_MSC_VER)
+
+#if TRY_USE_INTRINSICS && defined(_MSC_VER)
 	        unsigned long index;
             _BitScanForward(&index, val);
             return index;
-#elif defined(__GCC__)
+#elif TRY_USE_INTRINSICS && defined(__GCC__)
 	        return __builtin_ffsl(val) - 1;
+#else
+            // TODO : Implement this
 #endif
         }
 
@@ -73,7 +108,8 @@ namespace Baseless
         inline int FindLowestSetBit (uint64_t val)
         {
             ASSERT_EXPR(val);
-#if defined(_MSC_VER)
+            
+#if TRY_USE_INTRINSICS && defined(_MSC_VER)
 #   if defined(_WIN64)
 	        unsigned long index;
             _BitScanForward64(&index, val);
@@ -81,16 +117,18 @@ namespace Baseless
 #   else
             // TODO : TEST THIS
 	        unsigned long index;
-            if (!_BitScanForward(&index, unsigned long(val))
+            if (!_BitScanForward(&index, unsigned long(val)))
             {
                 _BitScanForward(&index, unsigned long(val >> 32));
                 index |= 32;
             }
             return index;
 #   endif
-#elif defined(__GCC__)
+#elif TRY_USE_INTRINSICS && defined(__GCC__)
             // TODO : TEST THIS
 	        return __builtin_ffsll(val) - 1;
+#else
+            // TODO : Implement this
 #endif
         }
 
@@ -106,13 +144,15 @@ namespace Baseless
         inline int FindHighestSetBit (uint32_t val)
         {
             ASSERT_EXPR(val);
-#if defined(_MSC_VER)
+#if TRY_USE_INTRINSICS && defined(_MSC_VER)
 	        unsigned long index;
 	        _BitScanReverse(&index, val);
             return index;
-#elif defined(__GCC__)
+#elif TRY_USE_INTRINSICS && defined(__GCC__)
             // TODO : TEST THIS
 	        return __builtin_ffsl(val) - 1;
+#else
+            // Implement this
 #endif
         }
 
@@ -120,7 +160,7 @@ namespace Baseless
         inline int FindHighestSetBit (uint64_t val)
         {
             ASSERT_EXPR(val);
-#if defined(_MSC_VER)
+#if TRY_USE_INTRINSICS && defined(_MSC_VER)
 #   if defined(_WIN64)
 	        unsigned long index;
 	        _BitScanReverse64(&index, val);
@@ -128,15 +168,17 @@ namespace Baseless
 #   else
             // TODO : TEST THIS
 	        unsigned long index;
-            if (_BitScanForward(&index, unsigned long(val >> 32))
+            if (_BitScanForward(&index, unsigned long(val >> 32)))
                 index |= 32;
             else
                 _BitScanForward(&index, unsigned long(val));
             return index;
 #   endif
-#elif defined(__GCC__)
+#elif TRY_USE_INTRINSICS && defined(__GCC__)
             // TODO : TEST THIS
 	        return __builtin_ffsll(val) - 1;
+#else
+            // TODO : Implement this
 #endif
         }
 
