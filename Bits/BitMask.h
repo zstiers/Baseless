@@ -65,12 +65,15 @@ namespace Baseless
             TBitMask (Type val) : m_val(val) { }
 
         public: // Basic mutators
-            inline void ClearBit (BitType bit)  { ClearMask(BitToMask(bit));  }
-            inline void ClearMask (Type mask)   { m_val &= ~mask;             }
-            inline void SetBit (BitType bit)    { SetMask(BitToMask(bit));    }
-            inline void SetMask (Type mask)     { m_val |= mask;              }
-            inline void ToggleBit (BitType bit) { ToggleMask(BitToMask(bit)); }
-            inline void ToggleMask (Type mask)  { m_val ^= mask;              }
+            inline void ClearAll ()             { m_val = 0;                     }
+            inline void ClearBit (BitType bit)  { ClearMask(BitToMask(bit));     }
+            inline void ClearMask (Type mask)   { m_val &= ~mask;                }
+            inline void SetAll ()               { ClearAll(); ToggleAll();       }
+            inline void SetBit (BitType bit)    { SetMask(BitToMask(bit));       }
+            inline void SetMask (Type mask)     { m_val |= mask;                 }
+            inline void ToggleAll ()            { m_val = ~m_val;                }
+            inline void ToggleBit (BitType bit) { ToggleMask(BitToMask(bit));    }
+            inline void ToggleMask (Type mask)  { m_val ^= mask;                 }
 
         public: // Combination mutators
             template<typename... Args> inline void ClearBits (BitType arg1, BitType arg2, const Args&... args)  { ClearMask(BitsToMask(arg1, arg2, args...));  }
@@ -82,10 +85,12 @@ namespace Baseless
             inline void SetMaskTo (Type mask, bool val)  { val ? SetMask(mask) : ClearMask(mask); }
 
         public: // Some nice accessors
-            inline int  Count () const                 { return PopulationCount(m_val);       }
-            inline bool CheckBit (BitType bit) const   { return CheckMaskAny(BitToMask(bit)); }
-            inline bool CheckMaskAll (Type mask) const { return (m_val & mask) == mask;       }
-            inline bool CheckMaskAny (Type mask) const { return (m_val & mask) != 0;          }
+            inline int  Count () const                 { return PopulationCount(m_val);         }
+            inline bool CheckBit (BitType bit) const   { return CheckMaskAny(BitToMask(bit));   }
+            inline bool CheckMaskAll (Type mask) const { return (m_val & mask) == mask;         }
+            inline bool CheckMaskAny (Type mask) const { return (m_val & mask) != 0;            }
+            inline int  FindLowestSetBit () const      { return Bits::FindLowestSetBit(m_val);  }
+            inline int  FindHighestSetBit () const     { return Bits::FindHighestSetBit(m_val); }
 
         public: // Combination accessors
             template<typename... Args> inline bool CheckBitsAll (BitType arg1, BitType arg2, const Args&... args) const { return CheckMaskAll(BitsToMask(arg1, arg2, args...)); }
@@ -93,6 +98,7 @@ namespace Baseless
             
         public: // Operators (add non-const versions)
 	        inline bool operator [] (BitType bit) const { return CheckBit(bit); }
+            inline operator bool () const               { return m_val != 0;    }
             inline operator Type () const               { return m_val;         }
             
         public: // Iterators
@@ -102,8 +108,8 @@ namespace Baseless
             public:
                 inline CIteratorConst (Type val) : m_val(val) { }
                 inline bool operator!= (const CIteratorConst & rhs) const { return m_val != rhs.m_val; }
-                inline CIteratorConst & operator++ ()                     { m_val &= ~BitToMask(FindLowestSetBit(m_val)); return *this; }
-                inline int operator* () const                             { return FindLowestSetBit(m_val); }
+                inline CIteratorConst & operator++ ()                     { m_val &= ~BitToMask(Bits::FindLowestSetBit(m_val)); return *this; }
+                inline int operator* () const                             { return Bits::FindLowestSetBit(m_val); }
             };
 
         public: // Iterator functions

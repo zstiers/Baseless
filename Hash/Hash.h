@@ -17,14 +17,6 @@
 #include "../Utility/TypeList.h"
 #include <type_traits>
 
-// This function exists merely as a way to trick the compiler into checking other namespaces for HashAppend
-template <typename Hasher, typename T>
-inline void BaselessHashHashAppendGlobal (Hasher & h, const T & val)
-{
-    using namespace Baseless::Hash;
-    HashAppend(h, val);
-}
-
 namespace Baseless
 {
     namespace Hash
@@ -33,13 +25,16 @@ namespace Baseless
 
         class IHasher
         {
+        public: // Exposing here for usefulness
+            typedef HashCode HashCode;
+
         public:
             virtual void     AppendBytes (const void * buffer, size_t byteCount) = 0;
             virtual HashCode Result () const = 0;
 
         public: // Templated neatness
             template <typename T>
-            void Append (const T & val) { BaselessHashHashAppendGlobal(*this, val); }
+            void Append (const T & val) { HashAppend(*this, val); }
             template <typename T>
             void AppendBytes (const T & val) { AppendBytes(&val, sizeof(T)); }
         };

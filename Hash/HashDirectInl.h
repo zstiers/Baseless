@@ -66,6 +66,42 @@ namespace Baseless
         template <typename T>
         struct HashDirectControllerFloat <T, false> { };
 
+        // Class with overload
+        // TODO : ZS : Fix this support
+        //template <typename C>
+        //struct HasHashDirect {
+        //private:
+        //    template<typename T>
+        //    static constexpr auto check(T*)-> typename std::is_same<decltype(std::declval<T>().HashDirect<IHasher>()), HashCode>::type;
+
+        //    template<typename>
+        //    static constexpr std::false_type check(...);
+
+        //    typedef decltype(check<C>(0)) type;
+
+        //public:
+        //    static const bool value = type::value;
+        //};
+
+        //template <typename T, bool valid = std::is_class<T>::value && HasHashDirect<T>::value>
+        //struct HashDirectControllerClass : HashControllerValid
+        //{
+        //    template <typename H>
+        //    static inline HashCode HashDirect (const T & val)
+        //    {
+        //        return val.HashDirect<H>();
+        //    }
+
+        //    template <typename H, typename R, typename U>
+        //    static inline HashCode HashDirect (const T & val, const U & seed)
+        //    {
+        //        return val.HashDirect<H>(seed);
+        //    }
+        //};
+
+        //template <typename T>
+        //struct HashDirectControllerClass <T, false> { };
+
         // This should be valid for all types
         template <typename T>
         struct HashDirectControllerAny : HashControllerValid

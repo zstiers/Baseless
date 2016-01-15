@@ -33,8 +33,8 @@ namespace Baseless
         }
         namespace Mem
         {
-            template <typename T> T * Alloc (size_t num)     { return reinterpret_cast<T *>(std::malloc(num * sizeof(T))); }
-            template <typename T> T * AllocZero (size_t num) { return reinterpret_cast<T *>(std::calloc(num, sizeof(T))); }
+            template <typename T> T * Alloc (size_t num = 1)     { return reinterpret_cast<T *>(std::malloc(num * sizeof(T))); }
+            template <typename T> T * AllocZero (size_t num = 1) { return reinterpret_cast<T *>(std::calloc(num, sizeof(T))); }
 
             void Free (void * data)         { std::free(data); }
         }
@@ -200,8 +200,11 @@ namespace Baseless
             const auto hash      = GetHash(key);
             const auto hashIndex = HashToIndex(hash);
             const auto index     = FindIndex(key, hash, hashIndex);
-            ASSERT_MSG(index < m_capacity, "Key not found")(index, m_capacity);
-            ASSERT(!IsSlotEmpty(index))(index);
+            ASSERT_MSG(index != INVALID_INDEX && index < m_capacity, "Index out of bounds")(index, m_capacity);
+
+            // They key may not exist
+            if (index == INVALID_INDEX || IsSlotEmpty(index))
+                return;
 
             // Unset the hop
             auto &     hops      = m_hops[hashIndex];
@@ -238,7 +241,7 @@ namespace Baseless
                 if (!testHops)
                     continue;
         
-                const auto testOffset   = Bits::FindLowestSetBit(testHops);
+                const auto testOffset   = testHops.FindLowestSetBit();
                 const auto testSwapSlot = testIndex + testOffset;
                 if (testSwapSlot >= testIndexEnd)
                     continue;
@@ -477,8 +480,8 @@ namespace Baseless
                 ~Notifier () { Mem::Free(m_values); }
 
             public: // Types
-                typedef const Value & UserData;
-                typedef Value &&      UserDataGrow;
+                typedef Value &  UserData;
+                typedef Value && UserDataGrow;
 
             public: // Functions
                 void     OnDestroy (size_t index)                                 { Utility::Destruct(m_values[index]); }
@@ -506,13 +509,14 @@ namespace Baseless
             void Erase (const Key & key) { m_set.Erase(key); }
 
         public: // Get
+            Value &       Get (const Key & key)       { return m_set.GetUserData(key); }
             const Value & Get (const Key & key) const { return m_set.GetUserData(key); }
 
         public: // Set
-            void Set (const Key & key, const Value & value) { m_set.SetInternal<decltype(key), decltype(value)>(key, value); }
-            void Set (Key && key, const Value & value)      { m_set.SetInternal<decltype(key), decltype(value)>(key, value); }
-            void Set (const Key & key, Value && value)      { m_set.SetInternal<decltype(key), decltype(value)>(key, value); }
-            void Set (Key && key, Value && value)           { m_set.SetInternal<decltype(key), decltype(value)>(key, value); }
+            void Set (const Key & key, const Value & value) { m_set.SetInternal<decltype(key), decltype(value)>(key, (Notifier::UserData)value); }
+            void Set (Key && key, const Value & value)      { m_set.SetInternal<decltype(key), decltype(value)>(key, (Notifier::UserData)value); }
+            void Set (const Key & key, Value && value)      { m_set.SetInternal<decltype(key), decltype(value)>(key, (Notifier::UserData)value); }
+            void Set (Key && key, Value && value)           { m_set.SetInternal<decltype(key), decltype(value)>(key, (Notifier::UserData)value); }
         };
     }
 }

@@ -50,10 +50,39 @@ namespace Baseless
         template <typename T>
         struct HashAppendControllerFloat <T, false> { };
 
+        // Class with overload
+        template<typename C>
+        struct HasHashAppend {
+        private:
+            template<typename T>
+            static auto check(T*)-> typename std::is_same<decltype(std::declval<T>().HashAppend(std::declval<IHasher>())), void>::type;
+
+            template<typename>
+            static std::false_type check(...);
+
+            typedef decltype(check<C>(0)) type;
+
+        public:
+            static const bool value = type::value;
+        };
+
+        template <typename T, bool valid = std::is_class<T>::value && HasHashAppend<T>::value>
+        struct HashAppendControllerClass : HashControllerValid
+        {
+            template <typename H>
+            static inline void HashAppend (H & hasher, const T & val)
+            {
+                val.HashAppend(hasher);
+            }
+        };
+
+        template <typename T>
+        struct HashAppendControllerClass <T, false> { };
+
         // Controller picker
         template <typename T>
         struct HashAppendController {
-            typedef Utility::TypeList::List<HashAppendControllerFloat<T>, HashAppendControllerBasic<T>> ControllerList;
+            typedef Utility::TypeList::List<HashAppendControllerFloat<T>, HashAppendControllerBasic<T>, HashAppendControllerClass<T>> ControllerList;
 
             // TListSearch searches linearly though the list until the first child deriving from RequiredBase is encountered.
             typedef typename Utility::TypeList::TypeMatching<ControllerList, Utility::TypeList::MatchIsDerived<HashControllerValid>>::Result CorrectController;

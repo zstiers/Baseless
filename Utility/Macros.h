@@ -36,3 +36,14 @@
 #if !defined(REF)
 #   define REF(...) ((void)(0, __VA_ARGS__))
 #endif
+
+
+/****************************************************************************
+*
+*  OFFSETOF is always a helpful macro
+*
+****/
+
+#if !defined(OFFSETOF)
+#   define OFFSETOF(a,b) ((size_t)(&(((a*)(0))->b)))
+#endif
