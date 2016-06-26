@@ -1,71 +1,74 @@
 workspace "baseless"
-    configurations { "Debug", "Hybrid", "Release" }
-    editAndContinue "Off"
-    location ".build"
-    platforms { "Win32", "Win64" }
-    targetdir "%{wks.location}/.bin/%{cfg.buildcfg} (%{cfg.architecture})/%{prj.name}"
+	configurations { "Debug", "Hybrid", "Release" }
+	editAndContinue "Off"
+	location ".build"
+	platforms { "Win32", "Win64" }
+	targetdir "%{wks.location}/.bin/%{cfg.buildcfg} (%{cfg.architecture})/%{prj.name}"
     
-    -- Special for actions
-    filter "action:vs*"
-        platforms { "Win32", "Win64" }
+	-- Special for actions
+	filter "action:vs*"
+		platforms { "Win32", "Win64" }
     
-    -- Special for configurations
-    filter "configurations:Debug"
-        defines { "DEBUG" }
-        flags { "Symbols" }
-        libdirs { "ext/lib/Debug (%{cfg.architecture})" }
-        runtime "Debug"
+	-- Special for configurations
+	filter "configurations:Debug"
+		defines { "DEBUG" }
+		flags { "Symbols" }
+		libdirs { "ext/lib/Debug (%{cfg.architecture})" }
+		runtime "Debug"
         
-    filter "configurations:Hybrid"
-        defines { "DEBUG" }
-        flags { "Symbols" }
-        libdirs { "ext/lib/Release (%{cfg.architecture})" }
-        runtime "Release"
+	filter "configurations:Hybrid"
+		defines { "DEBUG" }
+		flags { "Symbols" }
+		libdirs { "ext/lib/Release (%{cfg.architecture})" }
+		runtime "Release"
         
-    filter "configurations:Release"
-        defines { "NDEBUG" }
-        libdirs { "ext/lib/Release (%{cfg.architecture})" }
-        optimize "On"
-        runtime "Release"
+	filter "configurations:Release"
+		defines { "NDEBUG" }
+		libdirs { "ext/lib/Release (%{cfg.architecture})" }
+		optimize "On"
+		runtime "Release"
         
-    -- Special for platforms
-    filter "platforms:Win32"
-        system "Windows"
-        architecture "x32"
+	-- Special for platforms
+	filter "platforms:Win32"
+		system "Windows"
+		architecture "x32"
 
-    filter "platforms:Win64"
-        system "Windows"
-        architecture "x64"
+	filter "platforms:Win64"
+		system "Windows"
+		architecture "x64"
     
-    -- Reset filters
-    filter {}
+	-- Reset filters
+	filter {}
     
-project "baseless"
-    -- Basics
-    kind "StaticLib"
-    language "C++"
-    location "%{wks.location}/%{prj.name}"
+	project "baseless"
+		-- Basics
+		kind "StaticLib"
+		language "C++"
+		location "%{wks.location}/%{prj.name}"
     
-    -- Files, with a nice default vpath (visual studio filters)
-    files { "inc/**.*", "src/**.*", "ext/**.*" }
-    vpaths { ["*"] = { "inc/*", "src/*" } }
+		-- Files, with a nice default vpath (visual studio filters)
+		files { "inc/**.*", "src/**.*", "ext/**.*" }
+		vpaths { ["*"] = { "inc/*", "src/*" } }
     
-    -- Reset filters
-    filter {}
+		-- Reset filters
+		filter {}
 
-project "tests"
-    -- Basics
-    kind "WindowedApp"
-    language "C++"
-    location "%{wks.location}/%{prj.name}"
-    
-    -- Files, with a nice default vpath (visual studio filters)
-    files { "tests/**.*" }
-    vpaths { ["*"] = "tests/*" }
-    
-    -- Reset filters
-    filter {}
-    
-    -- External linkage
-    includedirs "inc"
-    links { "baseless" }
+	-- Tests
+	for i, file in ipairs(os.matchdirs("tests/*")) do
+		project(file)
+			-- Basics
+			kind "ConsoleApp"
+			language "C++"
+			location "%{wks.location}"
+
+			-- Files, with a nice default vpath (visual studio filters)
+			files({ file .. "**/*" })
+			vpaths({ ["*"] = file .. "**/*" })
+
+			-- Reset filters
+			filter {}
+
+			-- External linkage
+			includedirs "inc"
+			links { "baseless" }
+	end
