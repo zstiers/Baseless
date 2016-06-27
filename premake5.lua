@@ -54,21 +54,19 @@ workspace "baseless"
 		filter {}
 
 	-- Tests
-	for i, file in ipairs(os.matchdirs("tests/*")) do
-		project(file)
-			-- Basics
-			kind "ConsoleApp"
-			language "C++"
-			location "%{wks.location}"
+	project "tests"
+		-- Basics
+		kind "ConsoleApp"
+		language "C++"
+		location "%{wks.location}/%{prj.name}"
 
-			-- Files, with a nice default vpath (visual studio filters)
-			files({ file .. "**/*" })
-			vpaths({ ["*"] = file .. "**/*" })
+		-- Files, with a nice default vpath (visual studio filters)
+		files{ "tests/**.*" }
+		vpaths{ ["*"] = "tests.*" }
 
-			-- Reset filters
-			filter {}
+		-- Reset filters
+		filter {}
 
-			-- External linkage
-			includedirs "inc"
-			links { "baseless" }
-	end
+		-- External linkage
+		includedirs "inc"
+		links { "baseless" }
