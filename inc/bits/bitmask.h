@@ -89,6 +89,7 @@ namespace Baseless
             inline bool CheckBit (BitType bit) const   { return CheckMaskAny(BitToMask(bit));   }
             inline bool CheckMaskAll (Type mask) const { return (m_val & mask) == mask;         }
             inline bool CheckMaskAny (Type mask) const { return (m_val & mask) != 0;            }
+            inline Type Get () const                   { return m_val;                          }
             inline int  FindLowestSetBit () const      { return Bits::FindLowestSetBit(m_val);  }
             inline int  FindHighestSetBit () const     { return Bits::FindHighestSetBit(m_val); }
 

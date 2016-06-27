@@ -3,6 +3,7 @@ workspace "baseless"
 	editAndContinue "Off"
 	location ".build"
 	platforms { "Win32", "Win64" }
+    startproject "tests"
 	targetdir "%{wks.location}/.bin/%{cfg.buildcfg} (%{cfg.architecture})/%{prj.name}"
     
 	-- Special for actions
