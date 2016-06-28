@@ -11,6 +11,7 @@
 ****/
 
 enum ETestType {
+    TEST_TYPE_ALL,
     TEST_TYPE_CORRECTNESS,
     TEST_TYPE_PERFORMANCE,
     TEST_TYPES
